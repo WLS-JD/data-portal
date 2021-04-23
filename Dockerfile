@@ -21,8 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \
-    && npm install -g npm@7.9.0 \
-    && npm config set maxsockets 5
+    && npm install -g npm@6
 
 ARG APP=dev
 ARG BASENAME
@@ -35,11 +34,11 @@ RUN COMMIT=`git rev-parse HEAD` && echo "export const portalCommit = \"${COMMIT}
     && /bin/rm -rf .git \
     && /bin/rm -rf node_modules
 RUN npm config set unsafe-perm=true \
-    && npm ci --legacy-peer-deps \
+    && npm ci \
     && npm run relay \
     && npm run params
     # see https://stackoverflow.com/questions/48387040/nodejs-recommended-max-old-space-size
-RUN NODE_OPTIONS=--max-old-space-size=3584 NODE_ENV=production time ./node_modules/.bin/webpack --bail
+RUN NODE_OPTIONS=--max-old-space-size=2048 NODE_ENV=production time ./node_modules/.bin/webpack --bail
 RUN cp nginx.conf /etc/nginx/conf.d/nginx.conf \
     && rm /etc/nginx/sites-enabled/default
 
